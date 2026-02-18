@@ -14,28 +14,20 @@ function main()
 
     -- 2. Loop Infinito de Produção
     while true do
-        -- Verifica sensor de presença de caixa na esteira (Ex: Porta DI 0)
-        if DI(0) == 1 then
+        print("Caixa detectada. Iniciando processo...")
             
-            print("Caixa detectada. Iniciando processo...")
-            
-            -- A. Executa ciclo completo (Pick & Place)
-            process_box() 
-            
-            -- B. Atualiza contadores (coluna, linha, camada)
-            update_counters()
-            
-            -- C. Feedback visual
-            print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row, current_col))
+        -- A. Executa ciclo completo (Pick & Place)
+        process_box() 
+        
+        -- B. Atualiza contadores (coluna, linha, camada)
+        update_counters()
+        
+        -- C. Feedback visual
+        print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row, current_col))
 
-            -- D. Verifica se o palete está completo
-            if current_layer > max_layers then
-                finish_pallet()
-            end
-            
-        else
-            -- Se não tem caixa, aguarda um pouco para não sobrecarregar a CPU
-            Sleep(100) 
+        -- D. Verifica se o palete está completo
+        if current_layer > max_layers then
+            finish_pallet()
         end
     end
 end
