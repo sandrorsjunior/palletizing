@@ -5,15 +5,15 @@
 -- =========================================================
 
 -- 1. Dimensões da Caixa (mm)
-box_length = 400
-box_width = 400
-box_height = 400
-gap = 10 -- Folga de segurança
+box_length = 250
+box_width = 300
+box_height = 210
+gap = 5 -- Folga de segurança
 
 -- 2. Configuração do Palete
-pallet_rows = 1 -- Caixas no eixo Y
-pallet_cols = 3 -- Caixas no eixo X
-max_layers = 2
+pallet_rows = 2 -- Caixas no eixo Y
+pallet_cols = 2 -- Caixas no eixo X
+max_layers = 3
 
 -- 3. Pontos de Referência (World Coordinates: x, y, z, rx, ry, rz)
 pallet_frame_origin = P5["pose"] 
