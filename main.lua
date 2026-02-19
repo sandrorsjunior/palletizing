@@ -21,13 +21,15 @@ function main()
         
         -- B. Atualiza contadores (coluna, linha, camada)
         update_counters()
-        
+              
         -- C. Feedback visual
         print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row, current_col))
 
         -- D. Verifica se o palete está completo
         if current_layer > max_layers then
             finish_pallet()
+            break
         end
     end
+    print("-----FIM-----")
 end
