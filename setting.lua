@@ -16,7 +16,7 @@ pallet_cols = 3 -- Caixas no eixo X
 max_layers = 2
 
 -- 3. Pontos de Referência (World Coordinates: x, y, z, rx, ry, rz)
-pallet_frame_origin = P1["pose"] 
-pallet_frame_drop = P2["pose"] 
+pallet_frame_origin = P5["pose"] 
+pallet_frame_drop = P6["pose"] 
 
 -- Fim das configurações
