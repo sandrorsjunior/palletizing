@@ -19,4 +19,6 @@ max_layers = 3
 pallet_frame_origin = P5["pose"] 
 pallet_frame_drop = P6["pose"] 
 
+
+home_pos = P7
 -- Fim das configurações
