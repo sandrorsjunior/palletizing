@@ -26,6 +26,9 @@ function initialize_robot()
     print("Inicializando robô...")
 
     -- 1.1 Configurações de Movimento
+    VelL(10) -- Velocidade global 50%
+    AccL(10) -- Aceleração 30% (suave)
+    
     VelJ(10) -- Velocidade global 50%
     AccJ(10) -- Aceleração 30% (suave)
 
@@ -78,7 +81,7 @@ function get_drop_position(col, row, layer)
     -- Calcula offset relativo ao canto do palete
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
-    local offset_z = (-layer+3) * box_height
+    local offset_z = (-layer + 3) * box_height + box_height
 
     -- Aplica transformação: Origem Palete + Offset Calculado
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
@@ -102,7 +105,7 @@ function get_pick_position(col, row, layer)
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
     local offset_z = (layer - 1) * box_height
- 
+
     -- Aplica transformação: Origem Palete + Offset Calculado
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
     local target_pos = {
@@ -118,13 +121,25 @@ function get_pick_position(col, row, layer)
 
     return target_pos
 end
+
 -- modify the home position to mach with the taget poit but in a different z point
-function move_safe_plane(point)
-    local safe_plane = home_pos
-    safe_plane["pose"][1] = point["pose"][1]
-    safe_plane["pose"][2] = point["pose"][2]
-    return safe_plane
+function move_safe_plane(point, ref)
+  local point = point["pose"]
+  if ref == 4 then 
+    safe_ref = safe_ref_4["pose"][3]
+  else
+    safe_ref = safe_ref_5["pose"][3]
+  end
+      return {pose={
+          point[1],
+          point[2],
+          safe_ref,
+          point[4],
+          point[5],
+          point[6]
+      }}
 end
+
 
 -- =========================================================
 -- 5. ROTINA DE PICK AND PLACE
@@ -142,11 +157,11 @@ function process_box()
     -- 3. Retração (Sobe com a caixa)
     MovL({ pose = approach_pick }, { user = 4, tool = 2 })
 
-    MovJ(home_pos, { user = 0, tool = 2})
+    MovJ(home_pos, { user = 0, tool = 2 })
     -- Calcula destino no palete
     local p_drop = get_drop_position(current_col, current_row, current_layer)
     local approach_drop = get_approach(p_drop)
-    
+
     -- 4. Deslocamento e Aproximação
     MovL(move_safe_plane(p_drop), { user = 5, tool = 2 })
     MovJ({ pose = approach_drop }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
@@ -158,7 +173,7 @@ function process_box()
     print("disable vacuum") -- Solta vácuo (Porta 1 OFF)
 
     -- 7. Saída Segura
-    MovL({ pose = approach_drop }, { user = 5, tool = 2})
+    MovL({ pose = approach_drop }, { user = 5, tool = 2 })
     MovJ(P7, { user = 0, tool = 2, a = 20, v = 20 })
 end
 
@@ -194,18 +209,19 @@ function main()
     -- 2. Loop Infinito de Produção
     while true do
         print("Caixa detectada. Iniciando processo...")
-            
+
         -- A. Executa ciclo completo (Pick & Place)
-        process_box() 
-        
+        process_box()
+
         -- B. Atualiza contadores (coluna, linha, camada)
         update_counters()
-              
+
         -- C. Feedback visual
-        print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row, current_col))
+        print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row,
+            current_col))
 
         -- D. Verifica se o palete está completo
-        if current_layer == 0 then  
+        if current_layer == 0 then
             --finish_pallet()
             break
         end
