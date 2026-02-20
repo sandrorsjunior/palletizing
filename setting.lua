@@ -21,4 +21,6 @@ pallet_frame_drop = P6["pose"]
 
 
 home_pos = P7
+safe_ref_4 = P8
+safe_ref_5 = P9
 -- Fim das configurações
