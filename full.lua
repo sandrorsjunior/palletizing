@@ -120,6 +120,8 @@ function get_pick_position(col, row, layer)
     return target_pos
 end
 
+
+
 -- =========================================================
 -- 5. ROTINA DE PICK AND PLACE
 -- =========================================================
@@ -127,21 +129,21 @@ function process_box()
     -- 1. Aproximação do Picking (Acima da caixa)
     local p_pick = get_pick_position(current_col, current_row, current_layer)
     local approach_pick = get_approach(p_pick)
-    MovJ({ pose = approach_pick }, { user = 4, tool = 2, a = 20, v = 20 })
+    MovJ({ pose = approach_pick }, { user = 4, tool = 2 })
 
     print("enable vacuum") -- Ativa vácuo (Porta 1 ON)
-    MovL(p_pick, { user = 4, tool = 2, a = 20, v = 20 })
+    MovL(p_pick, { user = 4, tool = 2, a = 10, v = 10 })
 
     -- 3. Retração (Sobe com a caixa)
-    MovL({ pose = approach_pick }, { user = 4, tool = 2, a = 20, v = 20 })
+    MovL({ pose = approach_pick }, { user = 4, tool = 2 })
     
-    MovJ(P7, { user = 0, tool = 2, a = 20, v = 20 })
+    MovJ(P7, { user = 0, tool = 2})
     -- Calcula destino no palete
     local p_drop = get_drop_position(current_col, current_row, current_layer)
     local approach_drop = get_approach(p_drop)
 
     -- 4. Deslocamento e Aproximação
-    MovJ({ pose = approach_drop }, { user = 5, tool = 2, a = 20, v = 20 }) -- Movimento articular (rápido) no ar
+    MovJ({ pose = approach_drop }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
 
     -- 5. Posicionamento Fino
     MovL(p_drop, { user = 5, tool = 2, a = 10, v = 10 }) -- Movimento linear para precisão na descida
@@ -150,7 +152,7 @@ function process_box()
     print("disable vacuum") -- Solta vácuo (Porta 1 OFF)
 
     -- 7. Saída Segura
-    MovL({ pose = approach_drop }, { user = 5, tool = 2, a = 10, v = 10 })
+    MovL({ pose = approach_drop }, { user = 5, tool = 2})
     MovJ(P7, { user = 0, tool = 2, a = 20, v = 20 })
 end
 
@@ -197,7 +199,7 @@ function main()
         print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row, current_col))
 
         -- D. Verifica se o palete está completo
-        if current_layer == 0 then
+        if current_layer == 0 then  
             --finish_pallet()
             break
         end
