@@ -44,7 +44,6 @@ function initialize_robot()
 
     -- 1.6 Movimento para Home
     -- Posição segura: Alta, recolhida, longe de colisões
-    local home_pos = P7
     MovJ(home_pos)
 
     print("Sistema Inicializado. Aguardando caixas...")
@@ -64,7 +63,7 @@ function finish_pallet()
     MovL(safe_pose)
 
     -- 2.2 Vai para o Home (Longe da área de troca)
-    local home_pos = P7
+
     MovJ(home_pos)
 
     -- 2.3 Sinalização para o Operador
@@ -119,8 +118,13 @@ function get_pick_position(col, row, layer)
 
     return target_pos
 end
-
-
+-- modify the home position to mach with the taget poit but in a different z point
+function move_safe_plane(point)
+    local safe_plane = home_pos
+    safe_plane["pose"][1] = point["pose"][1]
+    safe_plane["pose"][2] = point["pose"][2]
+    return safe_plane
+end
 
 -- =========================================================
 -- 5. ROTINA DE PICK AND PLACE
@@ -129,6 +133,7 @@ function process_box()
     -- 1. Aproximação do Picking (Acima da caixa)
     local p_pick = get_pick_position(current_col, current_row, current_layer)
     local approach_pick = get_approach(p_pick)
+    MovL(move_safe_plane(p_pick), { user = 4, tool = 2 })
     MovJ({ pose = approach_pick }, { user = 4, tool = 2 })
 
     print("enable vacuum") -- Ativa vácuo (Porta 1 ON)
@@ -136,13 +141,14 @@ function process_box()
 
     -- 3. Retração (Sobe com a caixa)
     MovL({ pose = approach_pick }, { user = 4, tool = 2 })
-    
-    MovJ(P7, { user = 0, tool = 2})
+
+    MovJ(home_pos, { user = 0, tool = 2})
     -- Calcula destino no palete
     local p_drop = get_drop_position(current_col, current_row, current_layer)
     local approach_drop = get_approach(p_drop)
-
+    
     -- 4. Deslocamento e Aproximação
+    MovL(move_safe_plane(p_drop), { user = 5, tool = 2 })
     MovJ({ pose = approach_drop }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
 
     -- 5. Posicionamento Fino
