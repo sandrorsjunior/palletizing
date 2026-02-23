@@ -6,8 +6,13 @@
 -- 1. FUNÇÕES AUXILIARES
 
 -- Cria um ponto deslocado em Z para aproximação (Offset)
-function get_approach(point, z_offset)
-    local z_offset = z_offset or 100
+function get_approach(point, isRetract)
+    local isRetract = isRetract or false
+    local z_offset = 100
+    if isRetract then
+      z_offset = (-current_layer + max_layers) * box_height + 2*box_height
+    end
+    
     local point = point["pose"]
     return {
         point[1],
@@ -40,7 +45,7 @@ function initialize_robot()
     --SetPayload("") -- Peso da garra vazia
 
     -- 1.4 Reset de Variáveis de Estado (Globais)
-    current_layer = 2
+    current_layer = max_layers
     current_row = 1
     current_col = 1
     total_boxes_done = 0
@@ -81,7 +86,7 @@ function get_drop_position(col, row, layer)
     -- Calcula offset relativo ao canto do palete
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
-    local offset_z = (-layer + 2) * box_height + box_height
+    local offset_z = (-layer + max_layers) * box_height + box_height
 
     -- Aplica transformação: Origem Palete + Offset Calculado
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
@@ -142,6 +147,8 @@ function move_safe_plane(point, ref)
 end
 
 
+
+
 -- =========================================================
 -- 5. ROTINA DE PICK AND PLACE
 -- =========================================================
@@ -150,14 +157,16 @@ function process_box()
     local p_pick = get_pick_position(current_col, current_row, current_layer)
     local approach_pick = get_approach(p_pick)
     MovL(move_safe_plane(p_pick), { user = 4, tool = 2 })
-    MovJ({ pose = approach_pick }, { user = 4, tool = 2 })
+    MovJ({ pose = get_approach(p_pick, false) }, { user = 4, tool = 2 })
+    print(get_approach(p_pick, false))
 
     Wait(500)
     DO(14, ON)
     MovL(p_pick, { user = 4, tool = 2, a = 10, v = 10 })
     Wait(300)
     -- 3. Retração (Sobe com a caixa)
-    MovL({ pose = approach_pick }, { user = 4, tool = 2 })
+    MovL({ pose = get_approach(p_pick, true) }, { user = 4, tool = 2 })
+    print(get_approach(p_pick, true))
 
     MovJ(home_pos, { user = 0, tool = 2 })
     -- Calcula destino no palete
@@ -166,7 +175,7 @@ function process_box()
 
     -- 4. Deslocamento e Aproximação
     MovL(move_safe_plane(p_drop), { user = 5, tool = 2 })
-    MovJ({ pose = approach_drop }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
+    MovJ({ pose = get_approach(p_drop, false) }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
 
     -- 5. Posicionamento Fino
     MovL(p_drop, { user = 5, tool = 2, a = 10, v = 10 }) -- Movimento linear para precisão na descida
@@ -177,7 +186,7 @@ function process_box()
     Wait(500)
 
     -- 7. Saída Segura
-    MovL({ pose = approach_drop }, { user = 5, tool = 2 })
+    MovL({ pose = get_approach(p_drop, true) }, { user = 5, tool = 2 })
     MovJ(P7, { user = 0, tool = 2, a = 20, v = 20 })
 end
 
@@ -233,5 +242,5 @@ function main()
     print("-----FIM-----")
 end
 
-  
- main()
+ 
+main()
