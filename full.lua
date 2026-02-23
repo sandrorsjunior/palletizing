@@ -9,8 +9,9 @@
 function get_approach(point, isRetract)
     local isRetract = isRetract or false
     local z_offset = 100
+    local safe_zone = 30
     if isRetract then
-      z_offset = (-current_layer + max_layers) * box_height + 2*box_height
+      z_offset = (-current_layer + max_layers) * box_height + box_height + safe_zone
     end
     
     local point = point["pose"]
