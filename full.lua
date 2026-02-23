@@ -26,11 +26,11 @@ function initialize_robot()
     print("Inicializando robô...")
 
     -- 1.1 Configurações de Movimento
-    VelL(10) -- Velocidade global 50%
-    AccL(10) -- Aceleração 30% (suave)
+    VelL(30) -- Velocidade global 50%
+    AccL(30) -- Aceleração 30% (suave)
     
-    VelJ(10) -- Velocidade global 50%
-    AccJ(10) -- Aceleração 30% (suave)
+    VelJ(30) -- Velocidade global 50%
+    AccJ(30) -- Aceleração 30% (suave)
 
     -- 1.2 Configurações de Coordenadas e Ferramenta
     Tool(2) -- Usa o TCP calibrado da garra
@@ -40,7 +40,7 @@ function initialize_robot()
     --SetPayload("") -- Peso da garra vazia
 
     -- 1.4 Reset de Variáveis de Estado (Globais)
-    current_layer = 3
+    current_layer = 2
     current_row = 1
     current_col = 1
     total_boxes_done = 0
@@ -81,7 +81,7 @@ function get_drop_position(col, row, layer)
     -- Calcula offset relativo ao canto do palete
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
-    local offset_z = (-layer + 3) * box_height + box_height
+    local offset_z = (-layer + 2) * box_height + box_height
 
     -- Aplica transformação: Origem Palete + Offset Calculado
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
@@ -102,9 +102,10 @@ end
 function get_pick_position(col, row, layer)
     -- Fórmula Matemática aplicada
     -- Calcula offset relativo ao canto do palete
+    local offset_vacuum = 20
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
-    local offset_z = (layer - 1) * box_height
+    local offset_z = (layer - 1) * box_height - offset_vacuum
 
     -- Aplica transformação: Origem Palete + Offset Calculado
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
@@ -151,9 +152,10 @@ function process_box()
     MovL(move_safe_plane(p_pick), { user = 4, tool = 2 })
     MovJ({ pose = approach_pick }, { user = 4, tool = 2 })
 
-    print("enable vacuum") -- Ativa vácuo (Porta 1 ON)
+    Wait(500)
+    DO(14, ON)
     MovL(p_pick, { user = 4, tool = 2, a = 10, v = 10 })
-
+    Wait(300)
     -- 3. Retração (Sobe com a caixa)
     MovL({ pose = approach_pick }, { user = 4, tool = 2 })
 
@@ -168,9 +170,11 @@ function process_box()
 
     -- 5. Posicionamento Fino
     MovL(p_drop, { user = 5, tool = 2, a = 10, v = 10 }) -- Movimento linear para precisão na descida
-
+  
     -- 6. Liberação
-    print("disable vacuum") -- Solta vácuo (Porta 1 OFF)
+    Wait(500)
+    DO(14, OFF)
+    Wait(500)
 
     -- 7. Saída Segura
     MovL({ pose = approach_drop }, { user = 5, tool = 2 })
@@ -229,4 +233,5 @@ function main()
     print("-----FIM-----")
 end
 
-main()
+  
+ main()
