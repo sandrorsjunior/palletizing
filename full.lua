@@ -9,12 +9,19 @@
 function get_approach(point, isRetract)
     local isRetract = isRetract or false
     local z_offset = 100
-    local safe_zone = 30
     if isRetract then
-      z_offset = (-current_layer + max_layers) * box_height + box_height + safe_zone
+      z_offset = (-current_layer + max_layers) * box_height + box_height
     end
     
     local point = point["pose"]
+    print({
+        point[1],
+        point[2],
+        point[3] + z_offset,
+        point[4],
+        point[5],
+        point[6]
+    })
     return {
         point[1],
         point[2],
@@ -130,21 +137,18 @@ function get_pick_position(col, row, layer)
 end
 
 -- modify the home position to mach with the taget poit but in a different z point
-function move_safe_plane(point, ref)
-  local point = point["pose"]
-  if ref == 4 then 
-    safe_ref = safe_ref_4["pose"][3]
-  else
-    safe_ref = safe_ref_5["pose"][3]
-  end
-      return {pose={
-          point[1],
-          point[2],
-          safe_ref,
-          point[4],
-          point[5],
-          point[6]
-      }}
+function move_safe_plane()
+  local safe_ref = box_height * max_layers + 3*box_height
+      local result = {pose = {
+            pallet_frame_origin[1] + (box_height*2),
+            pallet_frame_origin[2] - ((box_height*3)/2),
+            P6["pose"][3], -- Z é o topo da caixa colocada
+            pallet_frame_origin[4],
+            pallet_frame_origin[5],
+            pallet_frame_origin[6]
+        }}
+
+     return result
 end
 
 
@@ -156,10 +160,8 @@ end
 function process_box()
     -- 1. Aproximação do Picking (Acima da caixa)
     local p_pick = get_pick_position(current_col, current_row, current_layer)
-    local approach_pick = get_approach(p_pick)
-    MovL(move_safe_plane(p_pick), { user = 4, tool = 2 })
+    MovL( move_safe_plane(), { user = 4, tool = 2 })
     MovJ({ pose = get_approach(p_pick, false) }, { user = 4, tool = 2 })
-    print(get_approach(p_pick, false))
 
     Wait(500)
     DO(14, ON)
@@ -175,7 +177,7 @@ function process_box()
     local approach_drop = get_approach(p_drop)
 
     -- 4. Deslocamento e Aproximação
-    MovL(move_safe_plane(p_drop), { user = 5, tool = 2 })
+    MovL( P7, { user = 5, tool = 2 })
     MovJ({ pose = get_approach(p_drop, false) }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
 
     -- 5. Posicionamento Fino
@@ -188,7 +190,7 @@ function process_box()
 
     -- 7. Saída Segura
     MovL({ pose = get_approach(p_drop, true) }, { user = 5, tool = 2 })
-    MovJ(P7, { user = 0, tool = 2, a = 20, v = 20 })
+    MovJ(home_pos, { user = 0, tool = 2, a = 20, v = 20 })
 end
 
 -- Atualiza os índices da matriz do palete
@@ -243,5 +245,4 @@ function main()
     print("-----FIM-----")
 end
 
- 
-main()
+MovJ(P2)
