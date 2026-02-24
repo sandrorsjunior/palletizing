@@ -10,22 +10,14 @@ function get_approach(point, isRetract)
     local isRetract = isRetract or false
     local z_offset = 100
     if isRetract then
-      z_offset = (-current_layer + max_layers) * box_height + box_height
+      z_offset = (-current_layer + max_layers) * box_height + box_height + 20
     end
     
     local point = point["pose"]
-    print({
-        point[1],
-        point[2],
-        point[3] + z_offset,
-        point[4],
-        point[5],
-        point[6]
-    })
     return {
         point[1],
         point[2],
-        point[3] + z_offset,
+        point[3] - z_offset,
         point[4],
         point[5],
         point[6]
@@ -102,13 +94,12 @@ function get_drop_position(col, row, layer)
         pose = {
             pallet_frame_drop[1] + offset_x,
             pallet_frame_drop[2] - offset_y,
-            pallet_frame_drop[3] + offset_z, -- Z é o topo da caixa colocada
+            pallet_frame_drop[3] - offset_z, -- Z é o topo da caixa colocada
             pallet_frame_drop[4],
             pallet_frame_drop[5],
             pallet_frame_drop[6]
         }
     }
-    print(target_pos["pose"])
     return target_pos
 end
 
@@ -126,7 +117,7 @@ function get_pick_position(col, row, layer)
         pose = {
             pallet_frame_origin[1] + offset_x,
             pallet_frame_origin[2] - offset_y,
-            pallet_frame_origin[3] + offset_z + box_height, -- Z é o topo da caixa colocada
+            pallet_frame_origin[3] - (offset_z + box_height), -- Z é o topo da caixa colocada
             pallet_frame_origin[4],
             pallet_frame_origin[5],
             pallet_frame_origin[6]
@@ -137,7 +128,11 @@ function get_pick_position(col, row, layer)
 end
 
 -- modify the home position to mach with the taget poit but in a different z point
-function move_safe_plane()
+function move_safe_plane(pallet)
+  local ref = pallet_frame_drop
+  if pallet == "origin" then 
+    ref = pallet_frame_origin
+  end
   local safe_ref = box_height * max_layers + 3*box_height
       local result = {pose = {
             pallet_frame_origin[1] + (box_height*2),
@@ -160,7 +155,7 @@ end
 function process_box()
     -- 1. Aproximação do Picking (Acima da caixa)
     local p_pick = get_pick_position(current_col, current_row, current_layer)
-    MovL( move_safe_plane(), { user = 4, tool = 2 })
+    MovL( move_safe_plane("origin"), { user = 4, tool = 2 })
     MovJ({ pose = get_approach(p_pick, false) }, { user = 4, tool = 2 })
 
     Wait(500)
@@ -169,7 +164,6 @@ function process_box()
     Wait(300)
     -- 3. Retração (Sobe com a caixa)
     MovL({ pose = get_approach(p_pick, true) }, { user = 4, tool = 2 })
-    print(get_approach(p_pick, true))
 
     MovJ(home_pos, { user = 0, tool = 2 })
     -- Calcula destino no palete
@@ -177,7 +171,7 @@ function process_box()
     local approach_drop = get_approach(p_drop)
 
     -- 4. Deslocamento e Aproximação
-    MovL( P7, { user = 5, tool = 2 })
+    MovL( move_safe_plane("drop"), { user = 5, tool = 2 })
     MovJ({ pose = get_approach(p_drop, false) }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
 
     -- 5. Posicionamento Fino
@@ -245,4 +239,4 @@ function main()
     print("-----FIM-----")
 end
 
-MovJ(P2)
+main()
