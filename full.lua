@@ -14,7 +14,7 @@ function get_approach(point, isRetract)
     end
 
     local point = point["pose"]
-    return {
+    local result = {
         point[1],
         point[2],
         point[3] - z_offset,
@@ -22,6 +22,10 @@ function get_approach(point, isRetract)
         point[5],
         point[6]
     }
+    print("----------------get_approach----------------")
+    print(result)
+    print("-------------------------------------")
+    return result
 end
 
 -- =========================================================
@@ -84,30 +88,35 @@ end
 function get_drop_position(col, row, layer, turned)
     -- Fórmula Matemática aplicada
     -- Calcula offset relativo ao canto do palete
-    local gap = 15
+    local gap = 10
+    
     local turned = turned or false
     local angle = turned and 90 or 0
-    local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
-    local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
+    
+    local offset_x = (col - 1) * (box_width + gap) + (box_width / 2) 
+    local offset_y = (row - 1) * (box_length + gap) + (box_length / 2)
     local offset_z = (-layer + max_layers) * box_height + box_height
 
     if turned then 
-      offset_x = (col - 1) * (box_width + gap) + (box_width / 2)
-      offset_y = (row - 1) * (box_length + gap) + (box_length / 2)
+      offset_x = (col - 1) * (box_length + gap) + (box_length / 2) 
+      offset_y = (row - 1) * (box_width + gap) + (box_width / 2) 
     end
     
     -- Aplica transformação: Origem Palete + Offset Calculado
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
     local target_pos = {
         pose = {
-            pallet_frame_drop[1] + offset_x,
-            pallet_frame_drop[2] - offset_y,
+            pallet_frame_drop[1] - offset_x,
+            pallet_frame_drop[2] + offset_y,
             pallet_frame_drop[3] - offset_z, -- Z é o topo da caixa colocada
             pallet_frame_drop[4],
             pallet_frame_drop[5],
             pallet_frame_drop[6] + angle
         }
     }
+    print("----------------drop----------------")
+    print(target_pos)
+    print("-------------------------------------")
     return target_pos
 end
 
@@ -116,7 +125,7 @@ function get_pick_position(col, row, layer, turned)
     -- Calcula offset relativo ao canto do palete
     local turned = turned or false
     local angle = turned and 90 or 0
-    local offset_vacuum = 20
+    local offset_vacuum = 2
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
     local offset_z = (layer - 1) * box_height - offset_vacuum
@@ -127,7 +136,7 @@ function get_pick_position(col, row, layer, turned)
     local target_pos = {
         pose = {
             pallet_frame_origin[1] + offset_x,
-            pallet_frame_origin[2] - offset_y,
+            pallet_frame_origin[2] + offset_y,
             pallet_frame_origin[3] - (offset_z + box_height), -- Z é o topo da caixa colocada
             pallet_frame_origin[4],
             pallet_frame_origin[5],
@@ -139,22 +148,25 @@ function get_pick_position(col, row, layer, turned)
 end
 
 -- modify the home position to mach with the taget poit but in a different z point
-function move_safe_plane(pallet, angle_z)
+function move_safe_plane(pallet, angle_z, point)
     local ref = pallet_frame_drop
     if pallet == "origin" then
         ref = pallet_frame_origin
     end
-    local safe_ref = box_height * max_layers + 3 * box_height
+    --local safe_ref = box_height * max_layers + 3 * box_height
     local result = {
         pose = {
-            pallet_frame_origin[1] + (box_height * 2),
-            pallet_frame_origin[2] - ((box_height * 3) / 2),
-            P6["pose"][3], -- Z é o topo da caixa colocada
-            pallet_frame_origin[4],
-            pallet_frame_origin[5],
+            point[1],
+            point[2],
+            P11["pose"][3], -- Z é o topo da caixa colocada
+            ref[4],
+            ref[5],
             angle_z
         }
     }
+    print("----------------safe_plane----------------")
+    print(result)
+    print("-------------------------------------")
 
     return result
 end
@@ -164,16 +176,16 @@ end
 -- =========================================================
 function process_box()
     -- 1. Aproximação do Picking (Acima da caixa)
-    local p_pick = get_pick_position(current_col, current_row, current_layer)
-    MovL(move_safe_plane("origin", p_pick["pose"][6]), { user = 4, tool = 2 })
-    MovJ({ pose = get_approach(p_pick, false) }, { user = 4, tool = 2 })
+    local p_pick = get_pick_position(current_col, current_row, current_layer, true)
+    MovL(move_safe_plane("origin", p_pick["pose"][6], p_pick["pose"]), { user = 4, tool = 2 })
+    MovL({ pose = get_approach(p_pick, false) }, { user = 4, tool = 2 })
 
     Wait(500)
     DO(14, ON)
     MovL(p_pick, { user = 4, tool = 2, a = 10, v = 10 })
     Wait(300)
     -- 3. Retração (Sobe com a caixa)
-    MovL({ pose = get_approach(p_pick, true) }, { user = 4, tool = 2 })
+    MovJ({ pose = get_approach(p_pick, true) }, { user = 4, tool = 2 })
 
     MovJ(home_pos, { user = 0, tool = 2 })
     -- Calcula destino no palete
@@ -181,8 +193,8 @@ function process_box()
     local approach_drop = get_approach(p_drop)
 
     -- 4. Deslocamento e Aproximação
-    MovL(move_safe_plane("drop",p_drop["pose"][6]), { user = 5, tool = 2 })
-    MovJ({ pose = get_approach(p_drop, false) }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
+    MovJ(move_safe_plane("drop",p_drop["pose"][6],p_drop["pose"]), { user = 5, tool = 2 })
+    MovL({ pose = get_approach(p_drop, false) }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
 
     -- 5. Posicionamento Fino
     MovL(p_drop, { user = 5, tool = 2, a = 10, v = 10 }) -- Movimento linear para precisão na descida
@@ -190,7 +202,7 @@ function process_box()
     -- 6. Liberação
     Wait(500)
     DO(14, OFF)
-    Wait(500)
+    Wait(900)
 
     -- 7. Saída Segura
     MovL({ pose = get_approach(p_drop, true) }, { user = 5, tool = 2 })
@@ -249,17 +261,49 @@ function main()
     print("-----FIM-----")
 end
 
+
+
 main()
 --[[
 MovJ(P1)
-MovJ(P10)
-local p_drop1 = get_drop_position(1,1,2,true)
-MovJ({ pose = get_approach(p_drop1, false) }, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
-local p_drop2 = get_drop_position(2,1,2,true)
-MovJ(p_drop2, { user = 5, tool = 2 }) -- Movimento articular (rápido) no ar
+local p_drop1 = get_drop_position(1, 1, 3,true)
+local approach_drop = get_approach(p_drop1)
+print("----------------safe_plane----------------")
+print(move_safe_plane("drop",p_drop1["pose"][6]))
+print("-------------------------------------")
+print("----------------drop1----------------")
+print(p_drop1)
+print("-------------------------------------")
+MovJ(move_safe_plane("drop",p_drop1["pose"][6]), { user = 5, tool = 2, a = 20, v = 20 })
+MovJ({ pose = get_approach(p_drop1, false) }, { user = 5, tool = 2, a = 25, v = 25 })
 
+local p_drop2 = get_drop_position(1, 2, 3,true)
+print("----------------drop1----------------")
+print(p_drop2)
+print("-------------------------------------")
+MovJ({ pose = get_approach(p_drop2, false) }, { user = 5, tool = 2, a = 25, v = 25 })
+
+]]
+
+
+--[[
 MovJ(P1)
-local p_drop1 = get_drop_position(1,1,2,true)
-MovL(move_safe_plane("drop", p_drop1["pose"][6]), { user = 5, tool = 2 })
+local p_pick1 = get_pick_position(1, 1, 3, true)
+print("----------------safe_plane----------------")
+print(move_safe_plane("origin",p_pick1["pose"][6]))
+print("-------------------------------------")
+
+print("----------------pick1----------------")
+print(p_pick1)
+print("-------------------------------------")
+MovJ(move_safe_plane("origin",p_pick1["pose"][6]), { user = 4, tool = 2, a = 25, v = 25 })
+MovJ({ pose = get_approach(p_pick1, false) }, { user = 4, tool = 2, a = 25, v = 25 })
+
+p_pick2 = get_pick_position(1, 2, 3,true)
+print("----------------pick2----------------")
+print(p_pick2)
+print("-------------------------------------")
+
+MovJ({ pose = get_approach(p_pick2, false) }, { user = 4, tool = 2, a = 25, v = 25 })
 
 ]]
