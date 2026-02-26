@@ -53,6 +53,7 @@ function initialize_robot()
     current_row = 1
     current_col = 1
     total_boxes_done = 0
+    direction = "origin"
 
     -- 1.6 Movimento para Home
     -- Posição segura: Alta, recolhida, longe de colisões
@@ -65,18 +66,14 @@ end
 -- 3. GERENCIAMENTO DE PALETE CHEIO
 -- =========================================================
 function finish_pallet()
-    print("--- PALETE CHEIO ---")
-
-    -- 2.1 Mover para Segurança (Sobe Z)
-    local safe_pose = GetPose()
-    local safe_height = 400
-    safe_pose["pose"][3] = safe_pose["pose"][3] + safe_height
-
-    MovL(safe_pose)
-
-    -- 2.2 Vai para o Home (Longe da área de troca)
 
     MovJ(home_pos)
+    
+    current_layer = max_layers
+    current_row = 1
+    current_col = 1
+    total_boxes_done = 0
+    direction = "destination"
 
     -- 2.3 Sinalização para o Operador
     print("Aguardando operador trocar o palete (Pressione Botão DI 1)...")
@@ -85,10 +82,11 @@ end
 -- =========================================================
 -- 4. CÁLCULO DE POSIÇÃO (MATEMÁTICA)
 -- =========================================================
-function get_drop_position(col, row, layer, turned)
+function get_drop_position(pallet,col, row, layer, turned)
     -- Fórmula Matemática aplicada
     -- Calcula offset relativo ao canto do palete
-    local gap = 10
+    local pallet = pallet
+    local gap = 25
     
     local turned = turned or false
     local angle = turned and 90 or 0
@@ -106,12 +104,12 @@ function get_drop_position(col, row, layer, turned)
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
     local target_pos = {
         pose = {
-            pallet_frame_drop[1] - offset_x,
-            pallet_frame_drop[2] + offset_y,
-            pallet_frame_drop[3] - offset_z, -- Z é o topo da caixa colocada
-            pallet_frame_drop[4],
-            pallet_frame_drop[5],
-            pallet_frame_drop[6] + angle
+            pallet[1] - offset_x,
+            pallet[2] + offset_y,
+            pallet[3] - offset_z, -- Z é o topo da caixa colocada
+            pallet[4],
+            pallet[5],
+            pallet[6] + angle
         }
     }
     print("----------------drop----------------")
@@ -120,12 +118,13 @@ function get_drop_position(col, row, layer, turned)
     return target_pos
 end
 
-function get_pick_position(col, row, layer, turned)
+function get_pick_position(pallet, col, row, layer, turned)
     -- Fórmula Matemática aplicada
     -- Calcula offset relativo ao canto do palete
+    local pallet = pallet
     local turned = turned or false
     local angle = turned and 90 or 0
-    local offset_vacuum = 2
+    local offset_vacuum = 10
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
     local offset_z = (layer - 1) * box_height - offset_vacuum
@@ -135,12 +134,12 @@ function get_pick_position(col, row, layer, turned)
     -- Nota: Em produção real, usa-se funções de multiplicação de matrizes/poses
     local target_pos = {
         pose = {
-            pallet_frame_origin[1] + offset_x,
-            pallet_frame_origin[2] + offset_y,
-            pallet_frame_origin[3] - (offset_z + box_height), -- Z é o topo da caixa colocada
-            pallet_frame_origin[4],
-            pallet_frame_origin[5],
-            pallet_frame_origin[6] + angle
+            pallet[1] + offset_x,
+            pallet[2] + offset_y,
+            pallet[3] - (offset_z + box_height), -- Z é o topo da caixa colocada
+            pallet[4],
+            pallet[5],
+            pallet[6] + angle
         }
     }
 
@@ -174,14 +173,25 @@ end
 -- =========================================================
 -- 5. ROTINA DE PICK AND PLACE
 -- =========================================================
-function process_box()
+function process_box(start)
+    local start = start or "origin"
+    local frame_origin = (start == "origin") and P8 or P9
+    local frame_destination = (start == "origin") and P9 or P8
+
+    print("---------set up----------------")
+      print("frame_origin:")
+      print(frame_origin)
+      print("frame_destination:")
+      print(frame_destination)
+    print("-------------------------------")
+
     -- 1. Aproximação do Picking (Acima da caixa)
-    local p_pick = get_pick_position(current_col, current_row, current_layer, true)
+    local p_pick = get_pick_position(frame_origin, current_col, current_row, current_layer, true)
     MovL(move_safe_plane("origin", p_pick["pose"][6], p_pick["pose"]), { user = 4, tool = 2 })
     MovL({ pose = get_approach(p_pick, false) }, { user = 4, tool = 2 })
 
     Wait(500)
-    DO(14, ON)
+    --DO(14, ON)
     MovL(p_pick, { user = 4, tool = 2, a = 10, v = 10 })
     Wait(300)
     -- 3. Retração (Sobe com a caixa)
@@ -189,7 +199,7 @@ function process_box()
 
     MovJ(home_pos, { user = 0, tool = 2 })
     -- Calcula destino no palete
-    local p_drop = get_drop_position(current_col, current_row, current_layer,true)
+    local p_drop = get_drop_position(frame_destination, current_col, current_row, current_layer, true)
     local approach_drop = get_approach(p_drop)
 
     -- 4. Deslocamento e Aproximação
@@ -243,7 +253,9 @@ function main()
         print("Caixa detectada. Iniciando processo...")
 
         -- A. Executa ciclo completo (Pick & Place)
-        process_box()
+        print("--- direction main: ---")
+        print(direction)
+        process_box(direction)
 
         -- B. Atualiza contadores (coluna, linha, camada)
         update_counters()
@@ -254,8 +266,8 @@ function main()
 
         -- D. Verifica se o palete está completo
         if current_layer == 0 then
-            --finish_pallet()
-            break
+            finish_pallet()
+            --break
         end
     end
     print("-----FIM-----")
