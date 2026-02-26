@@ -3,7 +3,8 @@
 -- ARQUIVO: setting.lua
 -- DESCRIÇÃO: Parâmetros de configuração e constantes
 -- =========================================================
-
+turned_pick = true
+turned_drop = true
 -- 1. Dimensões da Caixa (mm)
 box_length = 300
 box_width = 250
