@@ -83,21 +83,20 @@ end
 -- =========================================================
 -- 4. CÁLCULO DE POSIÇÃO (MATEMÁTICA)
 -- =========================================================
-function get_drop_position(pallet,col, row, layer, turned)
+function get_drop_position(pallet,col, row, layer, turned, teta)
     -- Fórmula Matemática aplicada
     -- Calcula offset relativo ao canto do palete
     local pallet = pallet
     local gap = 25
-    local gap_vaccum = 10
+    local gap_vaccum = 5
     
     local turned = turned or false
-    local angle = turned and 90 or 0
     
     local offset_x = (row - 1) * (box_width  + gap) + (box_width / 2) 
     local offset_y = (col - 1) * (box_length  + gap) + (box_length / 2)
     local offset_z = (-layer + max_layers) * box_height  + box_height
 
-    if turned then 
+    if (math.abs(teta) % 180 ~= 0) then 
       offset_x = (col - 1) * (box_length + gap) + (box_length / 2) 
       offset_y = (row - 1) * (box_width + gap) + (box_width / 2) 
       print("*****")
@@ -115,7 +114,7 @@ function get_drop_position(pallet,col, row, layer, turned)
             pallet["pose"][3] - (offset_z + gap_vaccum), -- Z é o topo da caixa colocada
             pallet["pose"][4],
             pallet["pose"][5],
-            pallet["pose"][6] + angle
+            pallet["pose"][6] + teta
         }
     }
     print("----------------drop----------------")
@@ -124,17 +123,23 @@ function get_drop_position(pallet,col, row, layer, turned)
     return target_pos
 end
 
-function get_pick_position(pallet, col, row, layer, turned)
+function get_pick_position(pallet, col, row, layer, turned, teta)
     -- Fórmula Matemática aplicada
     -- Calcula offset relativo ao canto do palete
     local turned = turned or false
-    local angle = turned and 90 or 0
     local offset_vacuum = 10
     local gap = 25
     
     local offset_x = (col - 1) * (box_length+ gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width+ gap) + (box_width / 2)
     local offset_z = (layer - 1) * box_height - offset_vacuum
+    
+    if (math.abs(teta) % 180 == 0) then 
+      offset_y = (col - 1) * (box_length + gap) + (box_length / 2) 
+      offset_x = (row - 1) * (box_width + gap) + (box_width / 2) 
+      print("*****")
+      print(offset_x)
+    end
     
     offset_x = (direction == "destination") and (-1 * offset_x) or offset_x
     
@@ -152,7 +157,7 @@ function get_pick_position(pallet, col, row, layer, turned)
             pallet["pose"][3] - (offset_z + box_height), -- Z é o topo da caixa colocada
             pallet["pose"][4],
             pallet["pose"][5],
-            pallet["pose"][6] + angle
+            pallet["pose"][6] + teta
         }
     }
     
@@ -192,13 +197,19 @@ function process_box(start)
     local frame_destination = P9
     local user_origin = 4
     local user_destination = 5
+    local teta_pick = 90
+    local teta_drop = 180
     if start == "destination" then
       frame_origin = P9
       frame_destination = P8
       user_origin = 5
       user_destination = 4
+      local temp = teta_pick
+      teta_pick = teta_drop
+      teta_drop = temp
     end
-
+    print(teta_pick)
+    print(teta_drop)
     print("---------set up----------------")
       print("frame_origin:")
       print(frame_origin)
@@ -207,8 +218,8 @@ function process_box(start)
     print("-------------------------------")
 
     -- 1. Aproximação do Picking (Acima da caixa)
-    local p_pick = get_pick_position(frame_origin, current_col, current_row, current_layer, turned_pick)
-    MovL(move_safe_plane(frame_origin, p_pick["pose"][6], p_pick["pose"]), {user = user_origin, tool = 2 })
+    local p_pick = get_pick_position(frame_origin, current_col, current_row, current_layer, turned_pick, teta_pick)
+    MovL(move_safe_plane(frame_origin, teta_pick, p_pick["pose"]), {user = user_origin, tool = 2 })
     --MovL(P11, {tool = 2 })
     MovL(get_approach(p_pick, false), {user = user_origin,tool = 2 })
 
@@ -221,11 +232,11 @@ function process_box(start)
 
     MovJ(home_pos, {user = 0, tool = 2 })
     -- Calcula destino no palete
-    local p_drop = get_drop_position(frame_destination, current_col, current_row, current_layer, turned_drop)
+    local p_drop = get_drop_position(frame_destination, current_col, current_row, current_layer, turned_drop, teta_drop)
     local approach_drop = get_approach(p_drop)
 
     -- 4. Deslocamento e Aproximação
-    MovJ(move_safe_plane(frame_destination,p_drop["pose"][6],p_drop["pose"]), {user = user_destination, tool = 2 })
+    MovJ(move_safe_plane(frame_destination,teta_drop,p_drop["pose"]), {user = user_destination, tool = 2 })
     --MovL(P12, {tool = 2 })
     MovL(get_approach(p_drop, false), {user = user_destination, tool = 2 }) -- Movimento articular (rápido) no ar
 
@@ -297,11 +308,12 @@ function main()
 end
 
 main()
+
 --[[
 direction = "destiantion"
-MovJ(home_pos, {user = 0, tool = 2 })
+--MovJ(home_pos, {user = 0, tool = 2 })
     -- Calcula destino no palete
-    local p_drop = get_drop_position(P9, 2, 1, 1, true)
+    local p_drop = get_pick_position(P9, 1, 1, 1, true)
 
     -- 4. Deslocamento e Aproximação
     MovJ(move_safe_plane(P9,p_drop["pose"][6],p_drop["pose"]), {user = 5, tool = 2 })

@@ -12,9 +12,9 @@ box_height = 210
 gap = 2 -- Folga de segurança
 
 -- 2. Configuração do Palete
-pallet_rows = 2 -- Caixas no eixo Y
-pallet_cols = 2 -- Caixas no eixo X
-max_layers = 4
+pallet_rows = 1-- Caixas no eixo Y
+pallet_cols = 1 -- Caixas no eixo X
+max_layers = 1
 
 -- 3. Pontos de Referência (World Coordinates: x, y, z, rx, ry, rz)
 pallet_frame_origin = P8["pose"] 
