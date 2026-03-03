@@ -32,6 +32,6 @@ offset_pr = {
 -- 0. Controler 
 current_layer = max_layers
 current_row = 1
-current_col = 2
+current_col = 1
 total_boxes_done = 0
-direction = "pl" -- ("pr" | "pl")
+direction = "pr" -- ("pr" | "pl")

@@ -9,8 +9,8 @@ function rotateZ(x, y, theta)
     local cos_t = math.cos(theta)
     local sin_t = math.sin(theta)
     
-    local newX = x * cos_t - y * sin_t
-    local newY = x * sin_t + y * cos_t
+    local newX = x * sin_t - y * cos_t
+    local newY = x * cos_t + y * sin_t
     
     return newX, newY
 end
@@ -23,16 +23,21 @@ function get_vector_offset(col, row, layer, angle, gap)
     local offset_y = (row - 1) * (box_width+ gap) + (box_width / 2)
     local offset_z = (layer - 1) * box_height - offset_vacuum
 
-    offset_x, offset_y = rotateZ(offset_x, offset_y, angle)
 
     local temp_x = (math.abs(offset_pallet["x"]) - math.abs((box_length/2))) + offset_x
 
-    return {
+    response = {
       x = (direction=="pr") and (temp_x * -1) or temp_x, 
       y = (math.abs(offset_pallet["y"]) - math.abs((box_width/2))) + offset_y, 
       z = offset_z + box_height,
       theta = offset_pallet["theta"] + angle
     }
+    print("-----------get_vector_offset----------------")
+    print(inspect(response))
+    print(rotateZ(response["x"], response["y"], angle))
+    print("----------------END----------------")
+
+    return response
 end
 
 function get_pick_position(theta_gripper)
