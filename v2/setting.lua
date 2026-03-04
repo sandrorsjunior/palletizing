@@ -17,16 +17,16 @@ PALLET_USER_7 = 7
 offset_vacuum = 5 -- Define quanto o gripper vai deformar sua espuma
 -- 4.1 offset pl
 offset_pl = {
-  x= 150.4493,
-  y= 123.6714,
-  theta= -81.8019
+  x= 158.4987,
+  y= 126.3081,
+  theta= 135.4723
 }
 
 -- 4.2 offset pr
 offset_pr = {
-  x= -161.453,
-  y= 146.6447,
-  theta= 135.7475
+  x= -144.9174,
+  y= 121.7384,
+  theta= 135.9192
 }
 
 -- 0. Controler 
