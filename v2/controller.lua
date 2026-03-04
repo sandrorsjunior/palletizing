@@ -17,13 +17,20 @@ function rotateZ(x, y, theta)
     return x_signal*math.abs(newX), y_signal*math.abs(newY)
 end
 
+function get_z_offset(status, layer)
+    local pick = (layer - 1) * box_height - offset_vacuum
+    local drop = (-layer + max_layers) * box_height
+    return (status == "pick") and pick or drop
+end
 
-function get_vector_offset(col, row, layer, angle, gap)
+
+
+function get_vector_offset(status, col, row, layer, angle, gap)
     local gap =  gap or 0
     local offset_pallet = (direction=="pl") and offset_pl or offset_pr
     local offset_x = (col - 1) * (box_length+ gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width+ gap) + (box_width / 2)
-    local offset_z = (layer - 1) * box_height - offset_vacuum
+    local offset_z = get_z_offset(status, layer)
 
 
     local temp_x = (math.abs(offset_pallet["x"]) - math.abs((box_length/2))) + offset_x
@@ -35,17 +42,13 @@ function get_vector_offset(col, row, layer, angle, gap)
       theta = offset_pallet["theta"] + math.deg(angle)
     }
     response["x"], response["y"] = rotateZ(response["x"], response["y"], angle)
-    --print("-----------get_vector_offset----------------")
-    --print(inspect(response))
-    --print(rotateZ(response["x"], response["y"], angle))
-    --print("----------------END----------------")
 
     return response
 end
 
-function get_pick_position(theta_gripper)
+function get_position(status, theta_gripper)
     local theta_gripper = theta_gripper or 0
-    local offset = get_vector_offset(current_col, current_row, current_layer, theta_gripper)
+    local offset = get_vector_offset(status, current_col, current_row, current_layer, theta_gripper)
     return {
         pose={
             offset["x"],
