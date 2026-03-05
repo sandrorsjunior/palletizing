@@ -24,17 +24,27 @@ function get_z_offset(status, layer)
     return (status == "pick") and pick or drop
 end
 
-function get_approach(point, theta, factor)
+-- status ("pick" | "drop")
+function get_approach(status, point, theta, factor)
     factor = factor or { factorX = 1, factorY = 1, factorZ = 1 }
     point = point["pose"]
-    local approach_offset = { x = current_col * (box_length) * factor["factorX"], y = current_row * (box_width) * factor["factorY"] }
+    local approach_offset = { x = box_length * factor["factorX"], y = box_width * factor["factorY"] }
     approach_offset["x"], approach_offset["y"] = rotateZ(approach_offset["x"], approach_offset["y"], theta)
+    local offsetX = (approach_offset["x"] * (math.abs(point[1]) / point[1]) * -1)
+    local offsetY = (approach_offset["y"] * (math.abs(point[2]) / point[2]) * -1)
+    local offsetZ = (box_height * factor["factorZ"])
     local approach_point = {
-        x = point[1] + (approach_offset["x"] * (math.abs(point[1]) / point[1]) * -1),
-        y = point[2] + (approach_offset["y"] * (math.abs(point[2]) / point[2]) * -1),
-        z = point[3] + (box_height * factor["factorZ"])
+        x = point[1] + ((status == "pick") and offsetX or offsetX * -1),
+        y = point[2] + ((status == "pick") and offsetY or offsetY * -1),
+        z = point[3] + offsetZ
     }
-    return { pose = { approach_point["x"], point[2], approach_point["z"], point[4], point[5], point[6] } }
+    if (status == "pick") then
+        return { pose = { approach_point["x"], point[2], approach_point["z"], point[4], point[5], point[6] } }
+    elseif (status == "drop") then
+        return { pose = { approach_point["x"], approach_point["y"], approach_point["z"], point[4], point[5], point[6] } }
+    else
+        print("Fudeu -> eu dediquei-me neste código mas você pôs um status invalido!")
+    end
 end
 
 function get_approach_soft(point, factor)
@@ -45,8 +55,8 @@ function get_approach_soft(point, factor)
             point[1],
             point[2],
             point[3] + (box_height / factor),
-            point[4], 
-            point[5], 
+            point[4],
+            point[5],
             point[6]
         }
     }
@@ -58,7 +68,7 @@ function get_vector_offset(status, col, row, layer, angle, gap)
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
     local offset_z = get_z_offset(status, layer)
-    print("*******", status, direction, inspect(offset_pallet) )
+    print("*******", status, direction, inspect(offset_pallet))
 
 
     local temp_x = (math.abs(offset_pallet["x"]) - math.abs((box_length / 2))) + offset_x
