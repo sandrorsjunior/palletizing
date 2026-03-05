@@ -74,7 +74,7 @@ function finish_pallet()
     current_row = 1
     current_col = 1
     total_boxes_done = 0
-    direction = "destination"
+    direction = (direction == "origin") and "destination" or "origin"
 
     -- 2.3 Sinalização para o Operador
     print("Aguardando operador trocar o palete (Pressione Botão DI 1)...")
