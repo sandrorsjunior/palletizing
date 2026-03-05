@@ -84,9 +84,9 @@ function get_vector_offset(status, col, row, layer, angle, gap)
     return response
 end
 
-function get_position(status, theta_gripper)
+function get_position(status, theta_gripper, gap)
     local theta_gripper = theta_gripper or 0
-    local offset = get_vector_offset(status, current_col, current_row, current_layer, theta_gripper)
+    local offset = get_vector_offset(status, current_col, current_row, current_layer, theta_gripper, gap)
     return {
         pose = {
             offset["x"],

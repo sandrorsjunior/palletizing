@@ -20,7 +20,7 @@ local approach_pick_point = get_approach("pick",pick_position, box_angle_pick, {
 local approach_pick_soft =  get_approach_soft(pick_position, 2)
 
 direction = "pl"
-local drop_position = get_position("drop", box_angle_drop)
+local drop_position = get_position("drop", box_angle_drop, 3)
 -- get the position of approach to pick
 local approach_drop_point = get_approach("drop",drop_position, box_angle_drop, {factorX = 1.1, factorY=1.1, factorZ=1.3})
 -- get the position over correct position but add few height
