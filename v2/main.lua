@@ -79,8 +79,4 @@ DO(14, OFF)
 
 Wait(500)
 
-MovL({pose=approach_drop_soft["pose"]}, {user = 6, tool=4, a = 10, v = 10})
-
-MovJ({pose=approach_drop_point["pose"]}, {user=6, tool=4, a = 10, v = 10})
-
 MovJ({pose=home_pos["pose"]}, {user=0, tool=4, a = 10, v = 10})
