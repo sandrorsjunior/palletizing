@@ -28,14 +28,14 @@ end
 function get_approach(status, point, theta, factor)
     factor = factor or 1
     point = point["pose"]
-    local approach_offset = {x = current_col*(box_length/2)*factor, y = current_row*(box_width/2)*factor}
+    local approach_offset = {x = current_col*(box_length)*factor, y = current_row*(box_width)*factor}
     approach_offset["x"], approach_offset["y"] = rotateZ(approach_offset["x"], approach_offset["y"], theta)
     local approach_point = {
-                            x = point[1] + (approach_offset["x"] * (math.abs(point[1])/point[1])),
-                            y = point[2] + (approach_offset["y"] * (math.abs(point[2])/point[2])),
+                            x = point[1] + (approach_offset["x"] * (math.abs(point[1])/point[1])*-1),
+                            y = point[2] + (approach_offset["y"] * (math.abs(point[2])/point[2])*-1),
                             z = point[3] + (box_height * factor)
                         }
-    return {pose = {approach_point["x"], approach_point["y"], approach_point["z"], point[4], point[5], point[6]}}
+    return {pose = {approach_point["x"], point[2], approach_point["z"], point[4], point[5], point[6]}}
 end
 
 function get_vector_offset(status, col, row, layer, angle, gap)
