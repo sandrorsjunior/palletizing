@@ -24,8 +24,7 @@ function get_z_offset(status, layer)
     return (status == "pick") and pick or drop
 end
 
--- status ("close" or "far")
-function get_approach(status, point, theta, factor)
+function get_approach(point, theta, factor)
     factor = factor or { factorX = 1, factorY = 1, factorZ = 1 }
     point = point["pose"]
     local approach_offset = { x = current_col * (box_length) * factor["factorX"], y = current_row * (box_width) * factor["factorY"] }
