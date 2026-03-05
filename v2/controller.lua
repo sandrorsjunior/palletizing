@@ -58,6 +58,7 @@ function get_vector_offset(status, col, row, layer, angle, gap)
     local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
     local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
     local offset_z = get_z_offset(status, layer)
+    print("*******", status, direction, inspect(offset_pallet) )
 
 
     local temp_x = (math.abs(offset_pallet["x"]) - math.abs((box_length / 2))) + offset_x
