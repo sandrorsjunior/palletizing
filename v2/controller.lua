@@ -6,15 +6,15 @@ require("setting")
 
 
 function rotateZ(x, y, theta)
-    local x_signal = math.abs(x)/x
-    local y_signal = math.abs(y)/y
+    local x_signal = math.abs(x) / x
+    local y_signal = math.abs(y) / y
     local cos_t = math.cos(theta)
     local sin_t = math.sin(theta)
-    
+
     local newX = x * cos_t - y * sin_t
     local newY = x * sin_t + y * cos_t
-    
-    return x_signal*math.abs(newX), y_signal*math.abs(newY)
+
+    return x_signal * math.abs(newX), y_signal * math.abs(newY)
 end
 
 -- status ("pick" or "drop")
@@ -26,33 +26,45 @@ end
 
 -- status ("close" or "far")
 function get_approach(status, point, theta, factor)
-    factor = factor or 1
+    factor = factor or { factorX = 1, factorY = 1, factorZ = 1 }
     point = point["pose"]
-    local approach_offset = {x = current_col*(box_length)*factor, y = current_row*(box_width)*factor}
+    local approach_offset = { x = current_col * (box_length) * factor["factorX"], y = current_row * (box_width) * factor["factorY"] }
     approach_offset["x"], approach_offset["y"] = rotateZ(approach_offset["x"], approach_offset["y"], theta)
     local approach_point = {
-                            x = point[1] + (approach_offset["x"] * (math.abs(point[1])/point[1])*-1),
-                            y = point[2] + (approach_offset["y"] * (math.abs(point[2])/point[2])*-1),
-                            z = point[3] + (box_height * factor)
-                        }
-    return {pose = {approach_point["x"], point[2], approach_point["z"], point[4], point[5], point[6]}}
+        x = point[1] + (approach_offset["x"] * (math.abs(point[1]) / point[1]) * -1),
+        y = point[2] + (approach_offset["y"] * (math.abs(point[2]) / point[2]) * -1),
+        z = point[3] + (box_height * factor["factorZ"])
+    }
+    return { pose = { approach_point["x"], point[2], approach_point["z"], point[4], point[5], point[6] } }
+end
+
+function get_approach_soft(point, factor)
+    factor = factor or 2
+    point = point["pose"]
+    return {
+        pose = {
+            point[1],
+            point[2],
+            point[3] + (box_height / factor)
+        }
+    }
 end
 
 function get_vector_offset(status, col, row, layer, angle, gap)
-    local gap =  gap or 0
-    local offset_pallet = (direction=="pl") and offset_pl or offset_pr
-    local offset_x = (col - 1) * (box_length+ gap) + (box_length / 2)
-    local offset_y = (row - 1) * (box_width+ gap) + (box_width / 2)
+    local gap = gap or 0
+    local offset_pallet = (direction == "pl") and offset_pl or offset_pr
+    local offset_x = (col - 1) * (box_length + gap) + (box_length / 2)
+    local offset_y = (row - 1) * (box_width + gap) + (box_width / 2)
     local offset_z = get_z_offset(status, layer)
 
 
-    local temp_x = (math.abs(offset_pallet["x"]) - math.abs((box_length/2))) + offset_x
+    local temp_x = (math.abs(offset_pallet["x"]) - math.abs((box_length / 2))) + offset_x
 
     response = {
-      x = (direction=="pr") and (temp_x * -1) or temp_x, 
-      y = (math.abs(offset_pallet["y"]) - math.abs((box_width/2))) + offset_y, 
-      z = offset_z + box_height,
-      theta = offset_pallet["theta"] + math.deg(angle)
+        x = (direction == "pr") and (temp_x * -1) or temp_x,
+        y = (math.abs(offset_pallet["y"]) - math.abs((box_width / 2))) + offset_y,
+        z = offset_z + box_height,
+        theta = offset_pallet["theta"] + math.deg(angle)
     }
     response["x"], response["y"] = rotateZ(response["x"], response["y"], angle)
 
@@ -63,7 +75,7 @@ function get_position(status, theta_gripper)
     local theta_gripper = theta_gripper or 0
     local offset = get_vector_offset(status, current_col, current_row, current_layer, theta_gripper)
     return {
-        pose={
+        pose = {
             offset["x"],
             offset["y"],
             offset["z"],
