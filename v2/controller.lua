@@ -44,7 +44,10 @@ function get_approach_soft(point, factor)
         pose = {
             point[1],
             point[2],
-            point[3] + (box_height / factor)
+            point[3] + (box_height / factor),
+            point[4], 
+            point[5], 
+            point[6]
         }
     }
 end

@@ -29,7 +29,22 @@ print(inspect(approach_point))
 print("approach_soft:")
 print(inspect(approach_soft))
 
+MovJ({pose=home_pos["pose"]}, {user=0, tool=4, a = 10, v = 10})
 
+MovJ({pose=approach_point["pose"]}, {user=7, tool=4, a = 10, v = 10})
 
+MovJ({pose=approach_soft["pose"]}, {user = 7, tool=4, a = 10, v = 10})
+
+MovL({pose=pick_position["pose"]}, {user = 7, tool = 4, a = 10, v = 10 })
+
+DO(14, ON)
+
+MovL({pose=approach_soft["pose"]}, {user = 7, tool=4, a = 10, v = 10})
+
+Wait(500)
+
+MovJ({pose=approach_point["pose"]}, {user=7, tool=4, a = 10, v = 10})
+
+MovJ({pose=home_pos["pose"]}, {user=0, tool=4, a = 10, v = 10})
 
 
