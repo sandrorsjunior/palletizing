@@ -14,14 +14,14 @@ while true do
         local box_angle_pick = 0
         local box_angle_drop = 0
 
-        direction = "pr"
+        direction = flow[1]
         local pick_position = get_position("pick", box_angle_pick)
         -- get the position of approach to pick
         local approach_pick_point = get_approach("pick",pick_position, box_angle_pick, {factorX = 1.1, factorY=1, factorZ=1.1})
         -- get the position over correct position but add few height
         local approach_pick_soft =  get_approach_soft(pick_position, 2)
 
-        direction = "pl"
+        direction = flow[2]
         local drop_position = get_position("drop", box_angle_drop, 3)
         -- get the position of approach to pick
         local approach_drop_point = get_approach("drop",drop_position, box_angle_drop, {factorX = 1.1, factorY=1.1, factorZ=1.3})
@@ -88,7 +88,7 @@ while true do
 
 
         update_counters()
-        
+
         -- D. Verifica se o palete está completo
         if current_layer == 0 then
             --finish_pallet()

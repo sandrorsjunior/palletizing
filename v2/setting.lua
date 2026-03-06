@@ -46,4 +46,7 @@ current_layer = max_layers
 current_row = 1
 current_col = 1
 total_boxes_done = 0
-direction = "pr" -- ("pr" | "pl") ----0.535296
+flow = {"pr","pl"}
+direction = flow[1]
+
+
