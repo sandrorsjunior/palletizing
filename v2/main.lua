@@ -91,8 +91,8 @@ while true do
 
         -- D. Verifica se o palete está completo
         if current_layer == 0 then
-            --finish_pallet()
-            break
+            reset()
+            --break
         end
     end
     print("-----END-----")
