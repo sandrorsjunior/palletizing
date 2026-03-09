@@ -6,7 +6,7 @@ box_height = 210
 -- 2. Configuração do Palete
 pallet_rows = 2 -- Caixas no eixo Y
 pallet_cols = 2 -- Caixas no eixo X
-max_layers = 1
+max_layers = 3
 
 PALLET_USER_6 = 6
 PALLET_USER_7 = 7
@@ -27,8 +27,7 @@ home_pos = {
 
 -- 4. offsets
 offset_vacuum = 17 -- Define quanto o gripper vai deformar sua espuma
-offset_static_drop = 5
-
+offset_static_drop = 15
 -- 4.1 offset pl
 offset_pl = {
     x = 150.0762, -- 150.0767
@@ -43,6 +42,7 @@ offset_pr = {
     theta = 135.9192
 }
 
+
 -- 0. Controler
 current_layer = max_layers
 current_row = 1
@@ -50,4 +50,5 @@ current_col = 1
 total_boxes_done = 0
 flow = {{pallet="pr", user=7},{pallet="pl", user=6}}
 direction = flow[1]["pallet"]
+
 

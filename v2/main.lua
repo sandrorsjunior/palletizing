@@ -23,10 +23,10 @@ while true do
     local approach_pick_soft = get_approach_soft(pick_position, 2)
 
     direction = flow[2]["pallet"]
-    local drop_position = get_position("drop", box_angle_drop, 3)
+    local drop_position = get_position("drop", box_angle_drop, 25)
     -- get the position of approach to pick
     local approach_drop_point = get_approach("drop", drop_position, box_angle_drop,
-        { factorX = 1.1, factorY = 1.1, factorZ = 1.3 })
+        { factorX = 0.3, factorY = 1.1, factorZ = 1.3 })
     -- get the position over correct position but add few height
     local approach_drop_soft = get_approach_soft(drop_position, 2)
 
@@ -34,11 +34,11 @@ while true do
     ------> PICK
 
 
-    MovJ({ pose = home_pos["pose"] }, { user = 0, tool = 5, a = 30, v = 30 })
+    MovJ({ pose = home_pos["pose"] }, { user = 0, tool = 5, a = 40, v = 40 })
 
-    --MovJ({pose=approach_pick_point["pose"]}, {user=flow[1]["user"], tool=5, a = 10, v = 10})
+    --MovJ({pose=approach_pick_point["pose"]}, {user=flow[1]["user"], tool=5, a = 30, v = 30 , cp = 50})
 
-    MovJ({ pose = approach_pick_soft["pose"] }, { user = flow[1]["user"], tool = 5, a = 10, v = 10 })
+    MovJ({ pose = approach_pick_soft["pose"] }, { user = flow[1]["user"], tool = 5, a = 30, v = 30, cp = 50 })
 
     MovL({ pose = pick_position["pose"] }, { user = flow[1]["user"], tool = 5, a = 10, v = 10 })
 
@@ -48,28 +48,30 @@ while true do
 
     MovL({ pose = approach_pick_soft["pose"] }, { user = flow[1]["user"], tool = 5, a = 10, v = 10 })
 
-    MovJ({ pose = approach_pick_point["pose"] }, { user = flow[1]["user"], tool = 5, a = 30, v = 30 })
+    MovJ({ pose = approach_pick_point["pose"] }, { user = flow[1]["user"], tool = 5, a = 30, v = 30, cp = 50 })
 
-    MovJ({ pose = home_pos["pose"] }, { user = 0, tool = 5, a = 30, v = 30 })
+    MovJ({ pose = home_pos["pose"] }, { user = 0, tool = 5, a = 30, v = 30, cp = 50 })
 
 
 
     ------> DROP
 
+    print("++++++", approach_drop_point["pose"])
+    MovJ({ pose = approach_drop_point["pose"] }, { user = flow[2]["user"], tool = 5, a = 30, v = 30, cp = 50 })
 
-    MovJ({ pose = approach_drop_point["pose"] }, { user = flow[2]["user"], tool = 5, a = 30, v = 30 })
 
     MovJ({ pose = approach_drop_soft["pose"] }, { user = flow[2]["user"], tool = 5, a = 10, v = 10 })
 
     MovL({ pose = drop_position["pose"] }, { user = flow[2]["user"], tool = 5, a = 10, v = 10 })
 
     DO(14, OFF)
-
     Wait(800)
+    MovL(RelPointUser({ pose = drop_position["pose"] }, { 0, 0, 25, 0, 0, 0 }),
+        { user = flow[2]["user"], tool = 5, a = 5, v = 30, cp = 50 })
+    Wait(100)
 
-    MovL(RelPointUser({ pose = drop_position["pose"] }, { 0, 0, 5, 0, 0, 0 }),
-        { user = flow[2]["user"], tool = 5, a = 10, v = 10 })
-    MovJ({ pose = home_pos["pose"] }, { user = 0, tool = 5, a = 30, v = 30 })
+
+    MovJ({ pose = home_pos["pose"] }, { user = 0, tool = 5, a = 10, v = 30 })
 
     print(string.format("Caixa depositada. Camada: %d, Linha: %d, Coluna: %d", current_layer, current_row,
         current_col))
