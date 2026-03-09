@@ -27,6 +27,8 @@ home_pos = {
 
 -- 4. offsets
 offset_vacuum = 17 -- Define quanto o gripper vai deformar sua espuma
+offset_static_drop = 5
+
 -- 4.1 offset pl
 offset_pl = {
     x = 150.0762, -- 150.0767

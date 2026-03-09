@@ -20,7 +20,7 @@ end
 -- status ("pick" or "drop")
 function get_z_offset(status, layer)
     local pick = (layer - 1) * box_height - offset_vacuum
-    local drop = (-layer + max_layers) * box_height
+    local drop = ((-layer + max_layers) * box_height) - offset_static_drop
     return (status == "pick") and pick or drop
 end
 
