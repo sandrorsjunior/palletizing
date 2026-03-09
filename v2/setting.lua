@@ -29,15 +29,15 @@ home_pos = {
 offset_vacuum = 17 -- Define quanto o gripper vai deformar sua espuma
 -- 4.1 offset pl
 offset_pl = {
-    x = 158.4987,
-    y = 126.3081,
+    x = 150.0762, -- 150.0767
+    y = 125.5334, -- 125.7994
     theta = 135.4723
 }
 
 -- 4.2 offset pr
 offset_pr = {
-    x = -144.9174,
-    y = 121.7384,
+    x = -149.646,  -- -150.3981
+    y = 128.2425,   -- 128.2422
     theta = 135.9192
 }
 
@@ -46,7 +46,6 @@ current_layer = max_layers
 current_row = 1
 current_col = 1
 total_boxes_done = 0
-flow = {"pr","pl"}
-direction = flow[1]
-
+flow = {{pallet="pr", user=7},{pallet="pl", user=6}}
+direction = flow[1]["pallet"]
 

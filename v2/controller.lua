@@ -116,15 +116,9 @@ end
 
 
 function reset()
-
-    MovJ(home_pos)
-    
     current_layer = max_layers
     current_row = 1
     current_col = 1
     total_boxes_done = 0
     flow = {flow[2], flow[1]}
-
-    -- 2.3 Sinalização para o Operador
-    print("Aguardando operador trocar o palete (Pressione Botão DI 1)...")
 end
