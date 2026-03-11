@@ -1,48 +1,44 @@
 import socket
-import struct
-import time
 
-
+# 1. Configurações de Rede (Devem coincidir com o servidor Lua)
 ROBOT_IP = "192.168.5.1"
-FEEDBACK_PORT = 50000
+PORT = 50000
 
-def read_realtime_data():
-    
+def connect_to_robot():
+    # 2. Criação do socket TCP (IPv4, TCP)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.settimeout(5.0)
-
+    
     try:
-        print(f"Conectando à porta de feedback {ROBOT_IP}:{FEEDBACK_PORT}...")
-        client_socket.connect((ROBOT_IP, FEEDBACK_PORT))
-        print("Conectado! Iniciando a leitura do fluxo de dados...\n")
-
+        print(f"Tentando conectar ao servidor do robô em {ROBOT_IP}:{PORT}...")
         
-        for i in range(5):
-            
-            data = client_socket.recv(4096) 
+        # 3. Estabelece a conexão
+        client_socket.connect((ROBOT_IP, PORT))
+        print("Conectado com sucesso! Aguardando coordenadas...\n")
+        print("-" * 40)
+
+        # 4. Loop de leitura contínua
+        while True:
+            data = client_socket.recv(1024)
             
             if not data:
-                print("Nenhum dado recebido. O robô pode ter encerrado a conexão.")
+                print("\nO servidor do robô encerrou a conexão.")
                 break
-                
-            print(f"--- Pacote {i+1} ---")
-            print(f"Tamanho bruto recebido: {len(data)} bytes")
             
+            coordenadas = data.decode('utf-8').strip()
             
+            print(f"Posição Atual -> {coordenadas}")
 
-            try:
-                print(data)
-            except struct.error as e:
-                print(f"Erro ao desempacotar: {e}")
-
-            time.sleep(0.5) 
-
+    except ConnectionRefusedError:
+        print("\nErro: Conexão recusada.")
+        print("Verifique se o script Lua já está em execução no DobotStudioPro antes de rodar o Python.")
+    except KeyboardInterrupt:
+        print("\n\nLeitura interrompida manualmente pelo usuário.")
     except Exception as e:
-        print(f"Erro na conexão: {e}")
+        print(f"\nErro inesperado na comunicação: {e}")
     finally:
-        
         client_socket.close()
-        print("\nConexão de leitura encerrada.")
+        print("-" * 40)
+        print("Cliente TCP encerrado.")
 
 if __name__ == "__main__":
-    read_realtime_data()
+    connect_to_robot()
