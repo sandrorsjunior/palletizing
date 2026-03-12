@@ -1,5 +1,5 @@
 import './App.css'
-import { Pallet } from './components/Pallet'
+import { PalletComponent } from './components/Pallet'
 
 function App() {
 
@@ -9,17 +9,17 @@ function App() {
     boxProps: {
       index: "0", // O index é sobrescrito no loop, mas o tipo exige aqui
       color: "#f39c12", // Cor alaranjada para as caixas
-      width: 2,
-      height: 2
+      width: 50,
+      height: 50
     }
   };
 
   return (
     <>
-      <Pallet
+      <PalletComponent
         box={myBoxConfig}
-        width={50}
-        height={50}
+        width={500}
+        height={500}
         color={"#3498db"}
         label={"Pallet 1"}
       />

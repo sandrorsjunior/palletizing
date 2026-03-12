@@ -1,4 +1,4 @@
-import { Box } from "./style";
+import { Box, Pallet } from "./style";
 import React from 'react';
 
 interface boxProps {
@@ -33,7 +33,7 @@ export const BoxComponent = (boxProps: boxProps) => {
     )
 }
 
-export const Pallet = (palletProps: PalletProps) => {
+export const PalletComponent = (palletProps: PalletProps) => {
     const boxes: React.JSX.Element[][] = []
     for (let row = 0; row < palletProps.box.quantite; row++) {
         const newRow: React.JSX.Element[] = []
@@ -51,12 +51,16 @@ export const Pallet = (palletProps: PalletProps) => {
     }
 
     return (
-        <div className="container-pallet" style={{ display: 'flex', flexDirection: 'column' }}>
-        {boxes.map((row, i) => (
+        <Pallet 
+            $color={palletProps.color}
+            $width={palletProps.width}
+            $height={palletProps.height}
+        >
+            {boxes.map((row, i) => (
             <div key={`row-${i}`} style={{ display: 'flex' }}>
                 {row}
             </div>
         ))}
-    </div>
+        </Pallet>
     )
 }

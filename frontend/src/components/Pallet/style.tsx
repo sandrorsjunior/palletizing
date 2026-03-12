@@ -27,6 +27,7 @@ interface PalletProps{
 
 export const Pallet = styled.div<PalletProps>`
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height:${ props => props.$height}px;
