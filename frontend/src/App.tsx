@@ -1,29 +1,34 @@
 import './App.css'
 import { PalletComponent } from './components/Pallet'
+import { WorkSpace } from './components/WorkSpace'
 
 function App() {
 
 
-  const myBoxConfig = {
-    quantite: 2, // Isso criará uma grade de 5x5 (baseado no seu loop aninhado)
-    boxProps: {
-      index: "0", // O index é sobrescrito no loop, mas o tipo exige aqui
-      color: "#f39c12", // Cor alaranjada para as caixas
-      width: 50,
-      height: 50
-    }
-  };
+
 
   return (
-    <>
+    <WorkSpace>
       <PalletComponent
-        box={myBoxConfig}
+        box={{
+          quantite: { row: 3, column: 3 },
+          boxProps: {
+            index: "0",
+            color: "#f39c12",
+            width: 50,
+            height: 70,
+            margin_H: 10,
+            margin_V: 70,
+            x: 30,
+            y: 0
+          }
+        }}
         width={500}
         height={500}
         color={"#3498db"}
         label={"Pallet 1"}
       />
-    </>
+    </WorkSpace>
   )
 }
 
