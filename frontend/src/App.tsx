@@ -16,17 +16,18 @@ function App() {
             index: "0",
             color: "#f39c12",
             width: 50,
-            height: 70,
-            margin_H: 10,
-            margin_V: 70,
-            x: 30,
+            height: 50,
+            margin_H: 5,
+            margin_V: 5,
+            x: 0,
             y: 0
           }
         }}
-        width={500}
-        height={500}
+        width={300}
+        height={300}
         color={"#3498db"}
         label={"Pallet 1"}
+        origin="bottom-right"
       />
     </WorkSpace>
   )

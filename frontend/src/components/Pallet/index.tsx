@@ -1,6 +1,8 @@
 import { Box, Pallet } from "./style";
 import React from 'react';
 
+export type OriginType = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
 interface boxProps {
     index: string,
     color: string,
@@ -9,7 +11,8 @@ interface boxProps {
     x: number,
     y: number,
     margin_H: number,
-    margin_V: number
+    margin_V: number,
+    origin?: OriginType
 }
 
 type BoxConfig = {
@@ -23,6 +26,7 @@ interface PalletProps{
     height: number,
     color: string,
     label: string,
+    origin?: OriginType
 }
 
 
@@ -36,6 +40,7 @@ export const BoxComponent = (boxProps: boxProps) => {
             $y={boxProps.y}
             $margin_H={boxProps.margin_H}
             $margin_V={boxProps.margin_V}
+            $origin={boxProps.origin}
         >
             {boxProps.index}
         </Box>
@@ -60,6 +65,7 @@ export const PalletComponent = (palletProps: PalletProps) => {
                 height={palletProps.box.boxProps.height}
                 x={x}
                 y={y}
+                origin={palletProps.origin}
                 margin_H={palletProps.box.boxProps.margin_H}
                 margin_V={palletProps.box.boxProps.margin_V}
             />)

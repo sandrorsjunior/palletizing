@@ -7,7 +7,8 @@ interface BoxProps{
     $x: number,
     $y: number,
     $margin_H: number,
-    $margin_V: number
+    $margin_V: number,
+    $origin?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 }
 
 export const Box = styled.div<BoxProps>`
@@ -15,8 +16,19 @@ export const Box = styled.div<BoxProps>`
     justify-content: center;
     align-items: center;
     position: absolute;
-    left: ${ props => props.$x}px;
-    top: ${ props => props.$y}px;
+    ${({ $origin, $x, $y }) => {
+        switch ($origin) {
+            case 'bottom-left':
+                return `left: ${$x}px; bottom: ${$y}px;`;
+            case 'bottom-right':
+                return `right: ${$x}px; bottom: ${$y}px;`;
+            case 'top-right':
+                return `right: ${$x}px; top: ${$y}px;`;
+            case 'top-left':
+            default:
+                return `left: ${$x}px; top: ${$y}px;`;
+        }
+    }}
     height:${ props => props.$height}px;
     width:${ props => props.$width}px;
     background-color:${ props => props.$color};
