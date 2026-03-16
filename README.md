@@ -1,79 +1,78 @@
-# Sistema de Paletização - Dobot CR20A
+# Sistema de Paletização Automatizado - Dobot CR20A
 
 Este projeto consiste em um sistema de paletização automatizado desenvolvido em **Lua**, projetado para operar com o robô colaborativo **Dobot CR20A**. O script gerencia a lógica de "Pick and Place" (pega e coloca), calculando automaticamente as posições de depósito com base nas dimensões da caixa e na configuração do palete.
 
-## 📋 Funcionalidades
+## 🚀 Funcionalidades
 
-*   **Cálculo Dinâmico de Posições:** Calcula as coordenadas de destino (X, Y, Z) baseando-se no tamanho da caixa e na camada atual.
-*   **Controle de Camadas:** Suporte para múltiplas camadas de empilhamento (`max_layers`).
-*   **Verificação de Pega:** Utiliza sensores digitais para confirmar se a caixa foi pega corretamente antes do movimento.
-*   **Movimentação Híbrida:** Combina movimentos articulares (`movej`) para deslocamentos rápidos e lineares (`movel`) para aproximações precisas.
+- **Cálculo Dinâmico de Posições**: Calcula a posição exata de cada caixa iterando sobre colunas, linhas e camadas, utilizando as dimensões reais da caixa.
+- **Abordagem Suave (Soft Approach)**: Lógica implementada para posições de aproximação, garantindo que o robô não colida com caixas adjacentes.
+- **Desenvolvimento Modular**: Divisão de regras de negócio, configurações e loop principal na pasta `src/`, facilitando a manutenção e testes.
+- **Build Automatizado**: Script em Python (`build.py`) que compila os múltiplos arquivos Lua em um único script que pode ser diretamente injetado no DobotStudioPro.
+- **Monitoramento de Coordenadas TCP/IP**: Sistema Servidor/Cliente que transmite as coordenadas `X`, `Y` e `Z` atuais do robô via rede.
 
-## 🛠️ Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
-O projeto é dividido em três arquivos principais para facilitar a manutenção:
+```text
+v2/
+├── src/
+│   ├── setting.lua      # Configurações de palete, dimensões de caixas e offsets.
+│   ├── controller.lua   # Regras matemáticas, rotações e cálculos de trajetória.
+│   └── main.lua         # Lógica principal, rotinas de MovJ, MovL e controle da garra.
+├── util/
+│   ├── build.py         # Script Python para concatenar e formatar o código-fonte Lua.
+│   └── build/           # Diretório gerado automaticamente contendo os códigos finais compilados.
+├── libs/
+│   └── inspect.lua      # Biblioteca Lua para inspeção de tabelas (usada para debug).
+├── server.lua           # Script TCP para rodar no robô e enviar poses em tempo real.
+└── client.py            # Script Python cliente para monitorar as coordenadas.
+```
 
-*   `main.lua`: Ponto de entrada do script. Gerencia o loop principal e o ciclo de vida da paletização.
-*   `setting.lua`: Arquivo de configuração. Contém as dimensões das caixas, geometria do palete e pontos de referência.
-*   `controller.lua`: Contém a lógica de controle, cálculos matemáticos de offset e comandos de movimento do robô.
+## 🛠️ Como Utilizar
 
-## ⚙️ Configuração (setting.lua)
-
-Antes de executar, ajuste as variáveis no arquivo `setting.lua` conforme o ambiente físico:
+### 1. Configurando os Parâmetros
+Todas as configurações físicas devem ser ajustadas no arquivo `src/setting.lua`. Nele você pode definir as dimensões da caixa e o comportamento do palete:
 
 ```lua
--- Dimensões da Caixa (mm)
-box_length = 400
-box_width = 300
-box_height = 250
-gap = 5 -- Folga entre caixas
+-- 1. Dimensões da Caixa (mm)
+box_length = 300
+box_width = 250
+box_height = 210
 
--- Configuração do Grid
-pallet_rows = 3 -- Número de caixas no eixo Y
-pallet_cols = 2 -- Número de caixas no eixo X
-max_layers = 4  -- Número total de camadas
-
--- Pontos de Referência (World Coordinates)
-p_pick = { ... } -- Local onde o robô pega a caixa
-pallet_frame_origin = { ... } -- Canto inicial do palete
+-- 2. Configuração do Palete
+pallet_rows = 2 -- Caixas no eixo Y
+pallet_cols = 2 -- Caixas no eixo X
+max_layers = 3
 ```
 
-## 🔌 Requisitos de Hardware e I/O
+### 2. Realizando o Build do Projeto
+A controladora do robô tipicamente espera um script unificado. Para unificar as configurações, a inteligência da controladora e o loop principal, utilize o utilitário de build:
 
-O script assume a seguinte configuração de Entradas e Saídas (I/O) no controlador do Dobot:
-
-| Tipo | Porta | Função | Descrição |
-|---|---|---|---|
-| **DO** (Saída Digital) | `1` | Ativar Vácuo | Liga/Desliga a ventosa/garra. |
-| **DI** (Entrada Digital) | `1` | Sensor de Vácuo | Confirma se a peça está presa (Pressostato). |
-
-## 🚀 Como Executar
-
-1.  Carregue os arquivos `.lua` no controlador do Dobot ou no software de simulação (ex: DobotStudio / DobotSCStudio).
-2.  Certifique-se de que os pontos `p_pick` e `pallet_frame_origin` foram ensinados (teach) corretamente para o seu ambiente físico.
-3.  Execute o arquivo `main.lua`.
-
-## 📐 Lógica de Empilhamento
-
-O sistema preenche o palete na seguinte ordem:
-1.  Preenche as colunas (Eixo X).
-2.  Preenche as linhas (Eixo Y).
-3.  Sobe para a próxima camada (Eixo Z).
-
-```mermaid
-graph TD
-    A[Início] --> B{Camada <= Max?}
-    B -- Sim --> C[Pegar Caixa]
-    C --> D[Calcular Posição Drop]
-    D --> E[Depositar Caixa]
-    E --> F[Atualizar Contadores]
-    F --> B
-    B -- Não --> G[Fim do Palete]
+```bash
+cd util
+python build.py
 ```
+*Este comando criará uma pasta `build/` contendo o `main.lua` pronto para o robô.*
 
-## 📝 Autor
+### 3. Execução no Robô
+1. Abra o **DobotStudioPro** (ou software equivalente do Dobot CR20A).
+2. Importe ou copie o código gerado em `util/build/main.lua`.
+3. Certifique-se de que os pontos iniciais (ex: `home_pos`) estão fisicamente livres.
+4. Inicie o programa.
 
-Desenvolvido para integração com Dobot CR20A.
+### 4. Monitoramento Remoto (Opcional)
+Caso deseje monitorar o TCP do robô em tempo real:
+1. Embarque e execute o script `server.lua` paralelamente no robô.
+2. No seu computador local (conectado à mesma rede), inicie o cliente em Python:
+   ```bash
+   python client.py
+   ```
+3. As posições atuais do robô serão impressas continuamente no seu terminal.
+
+## ⚙️ Pré-requisitos
+
+- **Hardware:** Robô colaborativo Dobot CR20A.
+- **Python:** Versão 3.6 ou superior (para execução do `build.py` e `client.py`).
+- **Rede:** Acesso via IP (`192.168.5.1`) para a comunicação TCP.
 
 ---
-*Nota: Este código requer as bibliotecas padrão de movimentação do Dobot (`movel`, `movej`, `set_digital_out`, etc).*
+*Desenvolvido para fins de aprendizagem*
